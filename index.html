@@ -1,0 +1,306 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AimDojo - Free Aim Trainer for Valorant & CS2</title>
+  <meta name="description" content="Train your aim with free 3D modes: flick shots, tracking, headshots and more. Made for Valorant and CS2 players.">
+  <meta name="keywords" content="aim trainer, valorant aim trainer, cs2 aim trainer, aim practice, flick shots, tracking">
+  <meta name="robots" content="index, follow">
+
+  <!-- Open Graph / Facebook / Discord / WhatsApp -->
+  <meta property="og:type" content="website">
+  <meta property="og:title" content="AimDojo - Free Aim Trainer for Valorant & CS2">
+  <meta property="og:description" content="Train your aim with free 3D modes: flick shots, tracking, headshots and more. Made for Valorant and CS2 players.">
+  <meta property="og:site_name" content="AimDojo">
+
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="AimDojo - Free Aim Trainer for Valorant & CS2">
+  <meta name="twitter:description" content="Train your aim with free 3D modes: flick shots, tracking, headshots and more. Made for Valorant and CS2 players.">
+
+  <!-- Favicon -->
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🎯</text></svg>">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <canvas id="bgCanvas"></canvas>
+  <div id="fpsCounter">0 FPS</div>
+
+  <!-- ==================== MAIN MENU ==================== -->
+  <div id="screen-menu" class="screen active">
+    <div class="menu-container">
+      <div class="launcher-tag">PRECISION SHOOTING RANGE // V3.0</div>
+      <h1 class="logo">AIM<span class="accent">DOJO</span></h1>
+      <p class="subtitle">PROFESSIONAL 3D FPS AIM TRAINER</p>
+
+      <!-- HERO DAILY CHALLENGE CARD -->
+      <div class="daily-hero-card" onclick="SFX.playClick(); Game.startDailyChallenge()">
+        <div class="daily-hero-badge">⭐ FEATURED ROUTINE</div>
+        <div class="daily-hero-content">
+          <div class="daily-hero-icon">🔥</div>
+          <div class="daily-hero-info">
+            <div class="daily-hero-title">DAILY CHALLENGE</div>
+            <div class="daily-hero-desc">5 progressive mini-modes from Easy to Pro (30s each) • Get your score out of 10</div>
+            <div class="daily-hero-status" id="dailyHeroStatus">Ready for today's test</div>
+          </div>
+          <button class="btn btn-accent daily-play-btn" onclick="event.stopPropagation(); SFX.playClick(); Game.startDailyChallenge()">
+            START DAILY ▶
+          </button>
+        </div>
+      </div>
+
+      <!-- MAIN NAVIGATION BUTTONS -->
+      <div class="menu-buttons">
+        <button class="btn btn-primary" onclick="SFX.playClick(); UI.showScreen('screen-modes')">
+          <span class="btn-icon">🎯</span> MODES (10 LEVELS)
+        </button>
+        <button class="btn btn-secondary" onclick="SFX.playClick(); UI.showScreen('screen-settings')">
+          <span class="btn-icon">⚙</span> SETTINGS
+        </button>
+        <button class="btn btn-secondary" onclick="SFX.playClick(); UI.showScreen('screen-stats')">
+          <span class="btn-icon">📊</span> STATS
+        </button>
+      </div>
+
+      <div class="fov-limit-hint">
+        <span>🔒 160° HORIZONTAL FIRING ARC</span> • <span>TARGETS SPAWN IN FRONT ONLY</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== MODES CATALOG ==================== -->
+  <div id="screen-modes" class="screen">
+    <div class="panel modes-panel">
+      <div class="panel-header">
+        <button class="btn-back" onclick="SFX.playClick(); UI.showScreen('screen-menu')">← BACK TO MENU</button>
+        <h2>TRAINING MODES</h2>
+        <p class="hint">10 specialized environments and target disciplines, ranked from Easy to Pro:</p>
+      </div>
+
+      <div class="modes-filter">
+        <button class="filter-tab active" data-filter="all" onclick="UI.filterModes('all')">ALL (10)</button>
+        <button class="filter-tab" data-filter="Easy" onclick="UI.filterModes('Easy')">EASY</button>
+        <button class="filter-tab" data-filter="Medium" onclick="UI.filterModes('Medium')">MEDIUM</button>
+        <button class="filter-tab" data-filter="Hard" onclick="UI.filterModes('Hard')">HARD</button>
+        <button class="filter-tab" data-filter="Pro" onclick="UI.filterModes('Pro')">PRO</button>
+      </div>
+
+      <div class="level-grid" id="modesGrid"></div>
+    </div>
+  </div>
+
+  <!-- ==================== MODE INSTRUCTIONS MODAL ==================== -->
+  <div id="screen-instructions" class="screen">
+    <div class="panel instructions-panel">
+      <div class="inst-badge" id="instBadge">EASY</div>
+      <h2 id="instTitle">STATIC TARGETS</h2>
+      <div class="inst-icon" id="instIcon">🎯</div>
+      <div class="inst-body">
+        <p class="inst-desc" id="instDesc"></p>
+        <div class="inst-rules" id="instRules"></div>
+      </div>
+      <div class="inst-buttons">
+        <button class="btn btn-primary" id="btnStartTraining" onclick="SFX.playClick(); Game.confirmStartGameplay()">
+          ▶ START TRAINING <span class="btn-hint">[SPACE]</span>
+        </button>
+        <button class="btn btn-secondary" onclick="SFX.playClick(); UI.showScreen('screen-modes')">
+          ← BACK
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== SETTINGS ==================== -->
+  <div id="screen-settings" class="screen">
+    <div class="panel settings-panel">
+      <button class="btn-back" onclick="SFX.playClick(); UI.showScreen('screen-menu')">← BACK TO MENU</button>
+      <h2>SETTINGS</h2>
+
+      <div class="settings-grid">
+        <!-- Pure Single Sensitivity -->
+        <div class="settings-section">
+          <h3>🎮 Mouse Sensitivity</h3>
+          <p class="setting-subtext">Direct 1:1 camera sensitivity for the 160° horizontal aiming range.</p>
+          <div class="setting-row">
+            <label>Sensitivity</label>
+            <input type="range" id="set-sens-slider" min="0.1" max="5.0" step="0.05" value="1.0" oninput="Settings.onSliderChange()" onchange="Settings.onSliderChange()">
+            <input type="number" id="set-sens" step="0.01" min="0.05" max="10" value="1.00" oninput="Settings.onNumberChange()" onchange="Settings.onNumberChange()">
+          </div>
+        </div>
+
+        <!-- Audio -->
+        <div class="settings-section">
+          <h3>🔊 Audio Feedback</h3>
+          <div class="setting-row">
+            <label>Master Volume</label>
+            <input type="range" id="set-volume" min="0" max="100" value="80" oninput="Settings.update()" onchange="Settings.update()">
+            <span id="volumeVal" class="setting-val-display">80%</span>
+          </div>
+        </div>
+
+        <!-- FOV -->
+        <div class="settings-section">
+          <h3>👁 Field of View</h3>
+          <div class="setting-row">
+            <label>Horizontal FOV</label>
+            <input type="range" id="set-fov" min="70" max="115" value="103" oninput="Settings.update()" onchange="Settings.update()">
+            <span id="fovVal" class="setting-val-display">103°</span>
+          </div>
+          <p class="setting-subtext">Camera horizontal FOV inside the 160° clamped horizontal viewing arc.</p>
+        </div>
+
+        <!-- Crosshair Customization -->
+        <div class="settings-section">
+          <h3>✛ Crosshair</h3>
+          <div class="setting-row">
+            <label>Color</label>
+            <input type="color" id="set-xhair-color" value="#00ff00" oninput="Settings.update()" onchange="Settings.update()">
+          </div>
+          <div class="setting-row">
+            <label>Size</label>
+            <input type="range" id="set-xhair-size" min="2" max="20" value="6" oninput="Settings.update()" onchange="Settings.update()">
+            <span id="xhairSizeVal" class="setting-val-display">6</span>
+          </div>
+          <div class="setting-row">
+            <label>Gap</label>
+            <input type="range" id="set-xhair-gap" min="0" max="15" value="3" oninput="Settings.update()" onchange="Settings.update()">
+            <span id="xhairGapVal" class="setting-val-display">3</span>
+          </div>
+          <div class="setting-row">
+            <label>Thickness</label>
+            <input type="range" id="set-xhair-thick" min="1" max="6" value="2" oninput="Settings.update()" onchange="Settings.update()">
+            <span id="xhairThickVal" class="setting-val-display">2</span>
+          </div>
+          <div class="crosshair-preview" id="crosshairPreview">
+            <canvas id="xhairCanvas" width="120" height="120"></canvas>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== STATS ==================== -->
+  <div id="screen-stats" class="screen">
+    <div class="panel">
+      <button class="btn-back" onclick="SFX.playClick(); UI.showScreen('screen-menu')">← BACK TO MENU</button>
+      <h2>TRAINING STATISTICS</h2>
+      <div class="stats-container">
+        <div class="stats-overview" id="statsOverview"></div>
+        <canvas id="statsChart" width="700" height="260"></canvas>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== GAME SCREEN ==================== -->
+  <div id="screen-game" class="screen">
+    <div id="gameHUD">
+      <div class="hud-left">
+        <div class="hud-item" id="hudModeName">Static Targets</div>
+        <div class="hud-badge" id="hudDifficulty">EASY</div>
+        <div class="hud-badge hud-daily-badge" id="hudDailyStage" style="display:none;">STAGE 1/5</div>
+      </div>
+      <div class="hud-center">
+        <div class="hud-timer" id="hudTimer">30</div>
+      </div>
+      <div class="hud-right">
+        <div class="hud-item">Score: <span id="hudScore">0</span></div>
+        <div class="hud-item">Acc: <span id="hudAccuracy">100%</span></div>
+      </div>
+    </div>
+
+    <!-- 160° Boundary Limit Warning Toast -->
+    <div id="boundaryWarning" class="boundary-warning">BOUNDARY LIMIT (160° VIEW)</div>
+
+    <canvas id="gameCanvas"></canvas>
+    <div id="crosshairOverlay"></div>
+    <div id="hitMarker" class="hit-marker">✕</div>
+    <div id="scorePopup" class="score-popup"></div>
+
+    <!-- Pause Overlay -->
+    <div id="pauseOverlay" class="pause-overlay" onclick="Game.resume()">
+      <div class="pause-box" onclick="event.stopPropagation()">
+        <h2>PAUSED</h2>
+        <p>Click anywhere or press [ESC] / [P] to resume pointer lock</p>
+        <div style="display:flex;gap:12px;justify-content:center;margin-top:20px;">
+          <button class="btn btn-primary btn-sm" onclick="SFX.playClick(); Game.resume()">RESUME</button>
+          <button class="btn btn-secondary btn-sm" onclick="SFX.playClick(); Game.exitToMenu()">MAIN MENU</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== COUNTDOWN ==================== -->
+  <div id="screen-countdown" class="screen">
+    <div class="countdown-display">
+      <div class="countdown-badge" id="countdownBadge">GET READY</div>
+      <div class="countdown-number" id="countdownNum">3</div>
+      <div class="countdown-label" id="countdownLabel">PREPARE YOUR AIM</div>
+    </div>
+  </div>
+
+  <!-- ==================== SINGLE MODE RESULTS ==================== -->
+  <div id="screen-results" class="screen">
+    <div class="panel results-panel">
+      <div class="results-badge" id="resultsDifficulty">EASY</div>
+      <h2 id="resultsTitle">RESULTS</h2>
+      <div class="results-stars" id="resultsStars">★★★</div>
+      <div class="results-grid" id="resultsGrid"></div>
+      <div class="results-pass" id="resultsPass"></div>
+      <div class="results-buttons">
+        <button class="btn btn-secondary" onclick="SFX.playClick(); Game.retry()">🔄 RETRY</button>
+        <button class="btn btn-primary" id="btnNextLevel" onclick="SFX.playClick(); Game.nextLevel()">▶ NEXT MODE</button>
+        <button class="btn btn-secondary" onclick="SFX.playClick(); UI.showScreen('screen-modes')">🎯 MODES</button>
+        <button class="btn btn-secondary" onclick="SFX.playClick(); UI.showScreen('screen-menu')">🏠 MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==================== DAILY CHALLENGE FINAL RESULTS ==================== -->
+  <div id="screen-daily-results" class="screen">
+    <div class="panel daily-results-panel">
+      <div class="daily-result-badge">🔥 DAILY CHALLENGE COMPLETE</div>
+      <h2>FINAL RATING</h2>
+
+      <!-- Big Score out of 10 -->
+      <div class="daily-score-box">
+        <div class="daily-score-val" id="dailyScoreVal">8.5<span class="daily-score-max">/10</span></div>
+        <div class="daily-rating-text" id="dailyRatingText">GREAT ACCURACY!</div>
+      </div>
+
+      <!-- Breakdown Table of all 5 stages -->
+      <div class="daily-table-wrap">
+        <table class="daily-table">
+          <thead>
+            <tr>
+              <th>Stage</th>
+              <th>Mode</th>
+              <th>Accuracy</th>
+              <th>Hits</th>
+              <th>Misses</th>
+              <th>Score</th>
+            </tr>
+          </thead>
+          <tbody id="dailyTableBody">
+            <!-- Populated via JS -->
+          </tbody>
+        </table>
+      </div>
+
+      <div class="results-buttons" style="margin-top:24px;">
+        <button class="btn btn-accent" onclick="SFX.playClick(); Game.startDailyChallenge()">🔄 RETRY DAILY</button>
+        <button class="btn btn-secondary" onclick="SFX.playClick(); UI.showScreen('screen-modes')">🎯 ALL MODES</button>
+        <button class="btn btn-secondary" onclick="SFX.playClick(); UI.showScreen('screen-menu')">🏠 MAIN MENU</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="three.min.js"></script>
+  <script>
+    if (typeof THREE === 'undefined') {
+      document.write('<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"><\/script>');
+    }
+  </script>
+  <script src="app.js?v=3"></script>
+</body>
+</html>
